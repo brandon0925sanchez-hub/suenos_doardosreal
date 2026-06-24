@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
-import { storage } from '../firebase'
 
 function ProductForm({ product, onSave, onCancel }) {
   const [formData, setFormData] = useState({
@@ -13,12 +11,14 @@ function ProductForm({ product, onSave, onCancel }) {
     available: true,
     imageUrl: ''
   })
-  const [image, setImage] = useState(null)
-  const [uploading, setUploading] = useState(false)
+  const [imagePreview, setImagePreview] = useState(null)
 
   useEffect(() => {
     if (product) {
       setFormData(product)
+      if (product.imageUrl) {
+        setImagePreview(product.imageUrl)
+      }
     }
   }, [product])
 
@@ -32,34 +32,22 @@ function ProductForm({ product, onSave, onCancel }) {
 
   const handleImageChange = (e) => {
     if (e.target.files[0]) {
-      setImage(e.target.files[0])
+      const file = e.target.files[0]
+      const reader = new FileReader()
+      
+      reader.onloadend = () => {
+        const base64 = reader.result
+        setFormData(prev => ({ ...prev, imageUrl: base64 }))
+        setImagePreview(base64)
+      }
+      
+      reader.readAsDataURL(file)
     }
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-    let imageUrl = formData.imageUrl
-
-    if (image) {
-      setUploading(true)
-      const storageRef = ref(storage, `products/${Date.now()}-${image.name}`)
-      const uploadTask = uploadBytesResumable(storageRef, image)
-      
-      await new Promise((resolve, reject) => {
-        uploadTask.on(
-          'state_changed',
-          null,
-          reject,
-          async () => {
-            imageUrl = await getDownloadURL(uploadTask.snapshot.ref)
-            resolve()
-          }
-        )
-      })
-      setUploading(false)
-    }
-
-    onSave({ ...formData, imageUrl })
+    onSave(formData)
   }
 
   return (
@@ -158,17 +146,16 @@ function ProductForm({ product, onSave, onCancel }) {
             onChange={handleImageChange}
             className="w-full"
           />
-          {formData.imageUrl && !image && (
-            <img src={formData.imageUrl} alt="Producto" className="mt-2 h-32 object-cover rounded" />
+          {imagePreview && (
+            <img src={imagePreview} alt="Producto" className="mt-2 h-32 object-cover rounded" />
           )}
         </div>
         <div className="flex gap-4">
           <button
             type="submit"
-            disabled={uploading}
-            className="flex-1 bg-terracotta text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition duration-300 disabled:opacity-50"
+            className="flex-1 bg-terracotta text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition duration-300"
           >
-            {uploading ? 'Subiendo...' : 'Guardar'}
+            Guardar
           </button>
           <button
             type="button"
