@@ -1,23 +1,32 @@
 import React, { useState, useEffect } from 'react'
 
-function ProductForm({ product, onSave, onCancel }) {
+function ProductForm({ product, onSave, onCancel, loading }) {
   const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    size: '',
-    description: '',
-    category: 'ceramica',
+    nombre: '',
+    precio: '',
+    medidas: '',
+    descripcion: '',
+    categoria: 'ceramica',
     material: 'yeso',
-    available: true,
-    imageUrl: ''
+    disponible: true,
+    imageFile: null
   })
   const [imagePreview, setImagePreview] = useState(null)
 
   useEffect(() => {
     if (product) {
-      setFormData(product)
-      if (product.imageUrl) {
-        setImagePreview(product.imageUrl)
+      setFormData({
+        nombre: product.nombre || '',
+        precio: product.precio || '',
+        medidas: product.medidas || '',
+        descripcion: product.descripcion || '',
+        categoria: product.categoria || 'ceramica',
+        material: product.material || 'yeso',
+        disponible: product.disponible !== false,
+        imageFile: null
+      })
+      if (product.imagenUrl) {
+        setImagePreview(product.imagenUrl)
       }
     }
   }, [product])
@@ -37,7 +46,7 @@ function ProductForm({ product, onSave, onCancel }) {
       
       reader.onloadend = () => {
         const base64 = reader.result
-        setFormData(prev => ({ ...prev, imageUrl: base64 }))
+        setFormData(prev => ({ ...prev, imageFile: file }))
         setImagePreview(base64)
       }
       
@@ -60,8 +69,8 @@ function ProductForm({ product, onSave, onCancel }) {
           <label className="block text-sage mb-2">Nombre</label>
           <input
             type="text"
-            name="name"
-            value={formData.name}
+            name="nombre"
+            value={formData.nombre}
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-terracotta"
             required
@@ -71,8 +80,8 @@ function ProductForm({ product, onSave, onCancel }) {
           <label className="block text-sage mb-2">Precio</label>
           <input
             type="number"
-            name="price"
-            value={formData.price}
+            name="precio"
+            value={formData.precio}
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-terracotta"
             required
@@ -82,8 +91,8 @@ function ProductForm({ product, onSave, onCancel }) {
           <label className="block text-sage mb-2">Medidas</label>
           <input
             type="text"
-            name="size"
-            value={formData.size}
+            name="medidas"
+            value={formData.medidas}
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-terracotta"
             required
@@ -92,8 +101,8 @@ function ProductForm({ product, onSave, onCancel }) {
         <div className="mb-4">
           <label className="block text-sage mb-2">Descripción</label>
           <textarea
-            name="description"
-            value={formData.description}
+            name="descripcion"
+            value={formData.descripcion}
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-terracotta"
             rows={3}
@@ -103,8 +112,8 @@ function ProductForm({ product, onSave, onCancel }) {
         <div className="mb-4">
           <label className="block text-sage mb-2">Categoría</label>
           <select
-            name="category"
-            value={formData.category}
+            name="categoria"
+            value={formData.categoria}
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-terracotta"
           >
@@ -112,7 +121,7 @@ function ProductForm({ product, onSave, onCancel }) {
             <option value="cuadro">Cuadro en Resina</option>
           </select>
         </div>
-        {formData.category === 'ceramica' && (
+        {formData.categoria === 'ceramica' && (
           <div className="mb-4">
             <label className="block text-sage mb-2">Material</label>
             <select
@@ -130,8 +139,8 @@ function ProductForm({ product, onSave, onCancel }) {
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
-              name="available"
-              checked={formData.available}
+              name="disponible"
+              checked={formData.disponible}
               onChange={handleChange}
               className="w-4 h-4 text-terracotta"
             />
@@ -153,14 +162,16 @@ function ProductForm({ product, onSave, onCancel }) {
         <div className="flex gap-4">
           <button
             type="submit"
-            className="flex-1 bg-terracotta text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition duration-300"
+            disabled={loading}
+            className="flex-1 bg-terracotta text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Guardar
+            {loading ? 'Guardando...' : 'Guardar'}
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-400 transition duration-300"
+            disabled={loading}
+            className="flex-1 bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-400 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>
