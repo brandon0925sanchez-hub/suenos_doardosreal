@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
+import { ref, onValue } from 'firebase/database'
 import { db } from '../firebase'
 
 function CeramicsCatalog() {
@@ -7,14 +7,15 @@ function CeramicsCatalog() {
   const [filter, setFilter] = useState('todos')
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      const querySnapshot = await getDocs(collection(db, 'productos'))
-      const ceramics = querySnapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(p => p.categoria === 'ceramica' && p.disponible)
+    const productsRef = ref(db, 'productos')
+    const unsubscribe = onValue(productsRef, (snapshot) => {
+      const data = snapshot.val()
+      const ceramics = data ? Object.keys(data)
+        .map(key => ({ id: key, ...data[key] }))
+        .filter(p => p.categoria === 'ceramica' && p.disponible) : []
       setProducts(ceramics)
-    }
-    fetchProducts()
+    })
+    return unsubscribe
   }, [])
 
   const filteredProducts = filter === 'todos' 

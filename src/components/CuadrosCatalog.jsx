@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
+import { ref, onValue } from 'firebase/database'
 import { db } from '../firebase'
 
 function CuadrosCatalog() {
   const [products, setProducts] = useState([])
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      const querySnapshot = await getDocs(collection(db, 'productos'))
-      const cuadros = querySnapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(p => p.categoria === 'cuadro' && p.disponible)
+    const productsRef = ref(db, 'productos')
+    const unsubscribe = onValue(productsRef, (snapshot) => {
+      const data = snapshot.val()
+      const cuadros = data ? Object.keys(data)
+        .map(key => ({ id: key, ...data[key] }))
+        .filter(p => p.categoria === 'cuadro' && p.disponible) : []
       setProducts(cuadros)
-    }
-    fetchProducts()
+    })
+    return unsubscribe
   }, [])
 
   return (

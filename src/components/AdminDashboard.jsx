@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { auth, db, storage } from '../firebase'
+import { ref, push, onValue, update, remove } from 'firebase/database'
+import { auth, db } from '../firebase'
 import { signOut } from 'firebase/auth'
 import ProductForm from './ProductForm'
+import { uploadToCloudinary } from '../utils/uploadToCloudinary'
 
 function AdminDashboard({ onLogout }) {
   const [products, setProducts] = useState([])
@@ -13,14 +13,14 @@ function AdminDashboard({ onLogout }) {
   const [message, setMessage] = useState(null)
 
   useEffect(() => {
-    fetchProducts()
+    const productsRef = ref(db, 'productos')
+    const unsubscribe = onValue(productsRef, (snapshot) => {
+      const data = snapshot.val()
+      const productsList = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : []
+      setProducts(productsList)
+    })
+    return unsubscribe
   }, [])
-
-  const fetchProducts = async () => {
-    const querySnapshot = await getDocs(collection(db, 'productos'))
-    const productsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-    setProducts(productsList)
-  }
 
   const handleAddProduct = () => {
     setEditingProduct(null)
@@ -42,9 +42,7 @@ function AdminDashboard({ onLogout }) {
       let imagenUrl = editingProduct?.imagenUrl || ''
 
       if (productData.imageFile) {
-        const storageRef = ref(storage, `productos/${Date.now()}_${productData.imageFile.name}`)
-        const snapshot = await uploadBytes(storageRef, productData.imageFile)
-        imagenUrl = await getDownloadURL(snapshot.ref)
+        imagenUrl = await uploadToCloudinary(productData.imageFile)
       }
 
       const productToSave = {
@@ -56,24 +54,24 @@ function AdminDashboard({ onLogout }) {
         material: productData.categoria === 'ceramica' ? productData.material : 'resina',
         disponible: productData.disponible,
         imagenUrl: imagenUrl,
-        creadoEn: editingProduct ? undefined : serverTimestamp()
+        creadoEn: editingProduct ? editingProduct.creadoEn : Date.now()
       }
 
       if (editingProduct) {
-        const productRef = doc(db, 'productos', editingProduct.id)
-        await updateDoc(productRef, productToSave)
-        setMessage({ type: 'success', text: 'Producto actualizado con éxito!' })
+        const productRef = ref(db, `productos/${editingProduct.id}`)
+        await update(productRef, productToSave)
+        setMessage({ type: 'success', text: '¡Producto guardado exitosamente!' })
       } else {
-        await addDoc(collection(db, 'productos'), productToSave)
-        setMessage({ type: 'success', text: 'Producto agregado con éxito!' })
+        const productsRef = ref(db, 'productos')
+        await push(productsRef, productToSave)
+        setMessage({ type: 'success', text: '¡Producto guardado exitosamente!' })
       }
 
       setShowForm(false)
       setEditingProduct(null)
-      fetchProducts()
     } catch (error) {
       console.error('Error saving product:', error)
-      setMessage({ type: 'error', text: 'Hubo un error al guardar el producto. Por favor, intenta de nuevo.' })
+      setMessage({ type: 'error', text: 'Error al guardar el producto, intenta de nuevo' })
     } finally {
       setLoading(false)
     }
@@ -82,12 +80,12 @@ function AdminDashboard({ onLogout }) {
   const handleDeleteProduct = async (productId) => {
     if (window.confirm('¿Estás seguro de eliminar este producto?')) {
       try {
-        await deleteDoc(doc(db, 'productos', productId))
+        const productRef = ref(db, `productos/${productId}`)
+        await remove(productRef)
         setMessage({ type: 'success', text: 'Producto eliminado con éxito!' })
-        fetchProducts()
       } catch (error) {
         console.error('Error deleting product:', error)
-        setMessage({ type: 'error', text: 'Hubo un error al eliminar el producto. Por favor, intenta de nuevo.' })
+        setMessage({ type: 'error', text: 'Error al guardar el producto, intenta de nuevo' })
       }
     }
   }
