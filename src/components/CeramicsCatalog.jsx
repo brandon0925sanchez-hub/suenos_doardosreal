@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { ref, onValue } from 'firebase/database'
 import { db } from '../firebase'
 
+const formatPrice = (price) => {
+  return '$ ' + Number(price).toLocaleString('es-CO');
+}
+
 function CeramicsCatalog() {
   const [products, setProducts] = useState([])
   const [filter, setFilter] = useState('todos')
@@ -67,7 +71,7 @@ function CeramicsCatalog() {
 
 function ProductCard({ product, onClickImage }) {
   const phoneNumber = '573209423572';
-  const message = encodeURIComponent(`Hola! Me interesa este producto: ${product.nombre} - $${product.precio}`);
+  const message = encodeURIComponent(`Hola! Me interesa este producto: ${product.nombre} - ${formatPrice(product.precio)}`);
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
 
   return (
@@ -96,7 +100,7 @@ function ProductCard({ product, onClickImage }) {
             {product.disponible ? 'Disponible' : 'Agotado'}
           </span>
         </div>
-        <p className="text-gold text-2xl font-serif font-bold mb-2">${product.precio}</p>
+        <p className="text-gold text-2xl font-serif font-bold mb-2">{formatPrice(product.precio)}</p>
         <p className="text-dark/70 text-sm font-sans mb-2">Medidas: {product.medidas}</p>
         <p className="text-dark/80 font-sans leading-relaxed mb-4">{product.descripcion}</p>
         <p className="text-sm font-sans text-dark/60 mb-4">Material: {product.material === 'yeso' ? 'Yeso' : 'Resina'}</p>

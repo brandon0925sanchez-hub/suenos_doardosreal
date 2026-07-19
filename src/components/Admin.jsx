@@ -19,8 +19,8 @@ function Admin() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-      <p style={{ color: '#C9A84C' }}>Cargando...</p>
-    </div>
+        <p style={{ color: '#C9A84C', fontSize: '1.25rem' }}>Cargando...</p>
+      </div>
     )
   }
 

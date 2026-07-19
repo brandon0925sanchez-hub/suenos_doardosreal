@@ -1,6 +1,9 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { ref, onValue } from 'firebase/database'
+import { db } from '../firebase'
 
 function Hero() {
+  const [heroImage, setHeroImage] = useState(null)
   const scrollToSection = (id) => {
     const element = document.getElementById(id)
     if (element) {
@@ -8,13 +11,21 @@ function Hero() {
     }
   }
 
+  useEffect(() => {
+    const heroRef = ref(db, 'config/heroImage')
+    const unsubscribe = onValue(heroRef, (snapshot) => {
+      setHeroImage(snapshot.val())
+    })
+    return unsubscribe
+  }, [])
+
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center bg-cream overflow-hidden">
-      {/* Background Image Placeholder */}
+      {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: 'url("/hero.jpg.jpeg")',
+          backgroundImage: heroImage ? `url(${heroImage})` : 'url("/hero.jpg.jpeg")',
           filter: 'brightness(0.7)'
         }}
       />
