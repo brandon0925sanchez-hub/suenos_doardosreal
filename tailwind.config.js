@@ -7,10 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        'terracotta': '#e07a5f',
-        'cream': '#f4f1de',
-        'warm-gray': '#81b29a',
-        'sage': '#3d405b',
+        gold: '#C9A84C',
+        cream: '#F5F0E8',
+        dark: '#1A1A1A',
+      },
+      fontFamily: {
+        serif: ['Playfair Display', 'serif'],
+        sans: ['Inter', 'sans-serif'],
       },
     },
   },

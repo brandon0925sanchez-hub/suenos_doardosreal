@@ -1,16 +1,39 @@
 import React from 'react'
 
 function Hero() {
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   return (
-    <section className="bg-warm-gray py-12 md:py-20">
-      <div className="container mx-auto px-4">
-        <div className="text-center text-white">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">Piezas hechas a mano con amor</h2>
-          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">Descubre nuestras cerámicas y cuadros en resina, personalizados para ti</p>
-          <a href="#ceramicas" className="bg-terracotta hover:bg-opacity-90 text-white font-bold py-3 px-8 rounded-full transition duration-300 inline-block">
-            Ver Catálogo
-          </a>
-        </div>
+    <section className="relative min-h-[90vh] flex items-center justify-center bg-cream overflow-hidden">
+      {/* Background Image Placeholder */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: 'url("/hero.jpg.jpeg")',
+          filter: 'brightness(0.7)'
+        }}
+      />
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-dark/30" />
+      
+      <div className="relative z-10 text-center px-6 max-w-4xl">
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-6 leading-tight">
+          Sueños Dorados
+        </h1>
+        <p className="text-xl md:text-2xl font-sans text-white/90 mb-10 max-w-2xl mx-auto">
+          Cerámicas y cuadros en resina hechos a mano
+        </p>
+        <button 
+          onClick={() => scrollToSection('ceramicas')}
+          className="bg-gold text-dark font-sans font-semibold py-4 px-10 rounded-full hover:bg-gold/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+        >
+          Ver Colección
+        </button>
       </div>
     </section>
   )

@@ -4,6 +4,7 @@ import { db } from '../firebase'
 
 function CuadrosCatalog() {
   const [products, setProducts] = useState([])
+  const [selectedImage, setSelectedImage] = useState(null)
 
   useEffect(() => {
     const productsRef = ref(db, 'productos')
@@ -18,41 +19,103 @@ function CuadrosCatalog() {
   }, [])
 
   return (
-    <section id="cuadros" className="py-12 bg-white">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center text-sage mb-8">Cuadros en Resina</h2>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+    <>
+      <section id="cuadros" className="py-20 bg-white">
+        <div className="container mx-auto px-6">
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-center text-dark mb-12">Cuadros en Resina</h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+            {products.map(product => (
+              <ProductCard key={product.id} product={product} onClickImage={() => setSelectedImage(product.imagenUrl)} />
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+      
+      {selectedImage && (
+        <Lightbox image={selectedImage} onClose={() => setSelectedImage(null)} />
+      )}
+    </>
   )
 }
 
-function ProductCard({ product }) {
+function ProductCard({ product, onClickImage }) {
+  const phoneNumber = '573209423572';
+  const message = encodeURIComponent(`Hola! Me interesa este producto: ${product.nombre} - $${product.precio}`);
+  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+
   return (
-    <div className="bg-cream rounded-lg overflow-hidden shadow-lg">
+    <div 
+      className="bg-cream rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 mx-auto" 
+      style={{ maxWidth: '320px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', transition: 'all 0.3s ease' }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.18)' }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.12)' }}
+    >
       {product.imagenUrl && (
-        <img 
-          src={product.imagenUrl} 
-          alt={product.nombre} 
-          className="w-full h-48 object-cover"
-        />
+        <div 
+          className="w-full bg-white flex items-center justify-center cursor-pointer"
+          style={{ height: '250px' }}
+          onClick={onClickImage}
+        >
+          <img 
+            src={product.imagenUrl} 
+            alt={product.nombre} 
+            className="w-full h-full object-contain"
+          />
+        </div>
       )}
-      <div className="p-4">
-        <div className="flex justify-between items-start">
-          <h3 className="text-xl font-bold text-sage">{product.nombre}</h3>
-          <span className={`px-2 py-1 rounded text-xs font-bold ${product.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+      <div className="p-6">
+        <div className="flex justify-between items-start mb-3">
+          <h3 className="text-2xl font-serif font-semibold text-dark">{product.nombre}</h3>
+          <span className={`px-3 py-1 rounded-full text-xs font-sans font-semibold ${product.disponible ? 'bg-gold/20 text-gold' : 'bg-gray-200 text-gray-600'}`}>
             {product.disponible ? 'Disponible' : 'Agotado'}
           </span>
         </div>
-        <p className="text-terracotta text-2xl font-bold mt-2">${product.precio}</p>
-        <p className="text-gray-600 text-sm mt-1">Medidas: {product.medidas}</p>
-        <p className="text-gray-700 mt-2">{product.descripcion}</p>
+        <p className="text-gold text-2xl font-serif font-bold mb-2">${product.precio}</p>
+        <p className="text-dark/70 text-sm font-sans mb-2">Medidas: {product.medidas}</p>
+        <p className="text-dark/80 font-sans leading-relaxed mb-4">{product.descripcion}</p>
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block text-center font-bold py-2 px-4 rounded-lg transition-all duration-300"
+          style={{ backgroundColor: '#C9A84C', color: 'white' }}
+          onMouseEnter={(e) => { e.target.style.backgroundColor = '#B8934A' }}
+          onMouseLeave={(e) => { e.target.style.backgroundColor = '#C9A84C' }}
+        >
+          🛒 Encargar
+        </a>
       </div>
+    </div>
+  )
+}
+
+function Lightbox({ image, onClose }) {
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  }, [onClose])
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <button 
+        onClick={onClose}
+        className="absolute top-4 right-4 text-white text-3xl font-bold hover:text-gray-300"
+      >
+        ×
+      </button>
+      <img 
+        src={image} 
+        alt="Expanded product" 
+        className="max-w-full max-h-full object-contain"
+        onClick={(e) => e.stopPropagation()}
+      />
     </div>
   )
 }

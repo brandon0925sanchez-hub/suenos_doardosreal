@@ -3,6 +3,7 @@ import Header from './Header'
 import Hero from './Hero'
 import CeramicsCatalog from './CeramicsCatalog'
 import CuadrosCatalog from './CuadrosCatalog'
+import About from './About'
 import Footer from './Footer'
 import WhatsAppButton from './WhatsAppButton'
 
@@ -13,6 +14,7 @@ function Landing() {
       <Hero />
       <CeramicsCatalog />
       <CuadrosCatalog />
+      <About />
       <Footer />
       <WhatsAppButton />
     </div>
